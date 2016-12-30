@@ -7,19 +7,23 @@ import IndexPage from './pages/IndexPage';
 import RegistrationPage from './pages/RegistrationPage';
 import ProfilePage from './pages/ProfilePage';
 import { IndexRoute, Route, browserHistory } from 'react-router';
+import store from './store';
+import {Provider} from 'react-redux';
 
 
 ReactStormpath.init();
 ReactDOM.render(
- <Router history={browserHistory}>
-  <HomeRoute path='/' component={MasterPage}>
-    <IndexRoute component={IndexPage} />
-    <LoginRoute path='/login' component={LoginPage} />
-    <Route path='/register' component={RegistrationPage} />
-    <AuthenticatedRoute>
-    	<HomeRoute path= '/profile' component={ProfilePage} />
-    </AuthenticatedRoute>
-  </HomeRoute>
-</Router>,
+<Provider store={store}>
+	 <Router history={browserHistory}>
+	  <HomeRoute path='/' component={MasterPage}>
+	    <IndexRoute component={IndexPage} />
+	    <LoginRoute path='/login' component={LoginPage} />
+	    <Route path='/register' component={RegistrationPage} />
+	    <AuthenticatedRoute>
+	    	<HomeRoute path= '/profile' component={ProfilePage} />
+	    </AuthenticatedRoute>
+	  </HomeRoute>
+	</Router>
+</Provider>,
   document.getElementById('app-container')
 );

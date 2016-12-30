@@ -17,14 +17,6 @@ app.use(stormpath.init(app, {
   }
 }));
 
-fetch("https://api.yelp.com/v3/businesses/search")
-  .then((response) => {
-    return response.json();
-  })
-  .then((body) => {
-    console.log(body);
-});
-
 
 app.post('/me', bodyParser.json(), stormpath.loginRequired, function (req, res) {
   function writeError(message) {
