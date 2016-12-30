@@ -8,9 +8,9 @@ import * as actions from '../actions/actions';
 
 export class MasterPage extends React.Component {
 
-  componentDidMount() {
-    this.props.dispatch(actions.getData())
-  }
+  // componentDidMount() {
+  //   this.props.dispatch(actions.getData())
+  // }
 
   render() {
     return (
