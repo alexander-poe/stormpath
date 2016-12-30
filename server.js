@@ -1,12 +1,21 @@
-const bodyParser = require('body-parser');
 const path = require('path');
 const express = require('express');
 const stormpath = require('express-stormpath');
+const bodyParser = require('body-parser');
 const webpack = require('webpack');
 const config = require('./webpack.config');
 const app = express();
 const compiler = webpack(config);
 const Yelp = require('yelpv3');
+
+var knex = require('knex')({
+  client: 'pg',
+  connection: {
+    database: 'YelpData'
+  },
+});
+
+app.use(bodyParser.json());
 
 app.use(require('webpack-dev-middleware')(compiler, {
   noInfo: true,
@@ -29,22 +38,37 @@ var yelp = new Yelp({
 // https://www.yelp.com/developers/documentation/v3/business_search 
 yelp.search({term: 'food', location: 'Merced', limit: 10})
 .then(function (data) {
-    console.log(data);
+    
 })
 .catch(function (err) {
     console.error('ERROR', err);
 });
 
-// userId: 3242340984509345, 
-//   list: {
-//     bars: {}, 
-//     restaurants: {}
+app.get('/users', (req, res) => {
+  knex('users').select('id', 'email').then((users) => {
+    return res.status(200).json({users})
+  })
 
-//   }
+})
 
-//================================= Stormpath
+app.post('/users', (req, res) => {
+  console.log('request', req)
+  const body = req.body;
+  console.log(body)
+  knex.insert({
+    id    :  body.id,
+    email : body.email
+  }).into('users').then(id => {
+    console.log(id)
+    return res.status(201).json({})
+  }).catch(e => {
+    console.error(e);
+    res.sendStatus(500);
+  })
 
-app.post('/me', bodyParser.json(), stormpath.loginRequired, function (req, res) {
+})
+
+app.post('/me', stormpath.loginRequired, function (req, res) {
   function writeError(message) {
     res.status(400);
     res.json({ message: message, status: 400 });
