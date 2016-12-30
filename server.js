@@ -17,6 +17,7 @@ var knex = require('knex')({
 
 app.use(bodyParser.json());
 
+
 app.use(require('webpack-dev-middleware')(compiler, {
   noInfo: true,
   publicPath: config.output.publicPath
@@ -27,9 +28,7 @@ app.use(stormpath.init(app, {
     produces: ['application/json']
   }
 }));
-
  //================================= Yelp Call
-
 var yelp = new Yelp({
   app_id: 'USwwY8oe_EPJHgmgNAFJrA',
   app_secret: '28AP3YcIOadjSNasanXU8pPt0e0JBzH8ar8Ndbdz6MUPzG36OBjIW6fTbhJsRouI'
@@ -44,20 +43,32 @@ yelp.search({term: 'food', location: 'Merced', limit: 10})
     console.error('ERROR', err);
 });
 
+var user; 
+
+app.get('/profile', stormpath.getUser, function (req, res) {
+   if (req.user) {
+    user = req.user.email;
+    console.log(user)
+    res.end();
+   } else {
+     res.send('Not logged in');
+   }
+
+ });
+
 app.get('/users', (req, res) => {
   knex('users').select('id', 'email').then((users) => {
     return res.status(200).json({users})
   })
-
 })
 
-app.post('/users', (req, res) => {
+app.post('/profile/save', (req, res) => {
   console.log('request', req)
   const body = req.body;
   console.log(body)
   knex.insert({
-    id    :  body.id,
-    email : body.email
+    id    : 4,
+    email : user
   }).into('users').then(id => {
     console.log(id)
     return res.status(201).json({})
@@ -66,7 +77,7 @@ app.post('/users', (req, res) => {
     res.sendStatus(500);
   })
 
-})
+});
 
 app.post('/me', stormpath.loginRequired, function (req, res) {
   function writeError(message) {
@@ -74,12 +85,10 @@ app.post('/me', stormpath.loginRequired, function (req, res) {
     res.json({ message: message, status: 400 });
     res.end();
   }
-
   function saveAccount () {
     req.user.givenName = req.body.givenName;
     req.user.surname = req.body.surname;
     req.user.email = req.body.email;
-
     req.user.save(function (err) {
       if (err) {
         return writeError(err.userMessage || err.message);
@@ -87,10 +96,8 @@ app.post('/me', stormpath.loginRequired, function (req, res) {
       res.end();
     });
   }
-
   if (req.body.password) {
     var application = req.app.get('stormpathApplication');
-
     application.authenticateAccount({
       username: req.user.username,
       password: req.body.existingPassword
@@ -98,16 +105,13 @@ app.post('/me', stormpath.loginRequired, function (req, res) {
       if (err) {
         return writeError('The existing password that you entered was incorrect.');
       }
-
       req.user.password = req.body.password;
-
       saveAccount();
     });
   } else {
     saveAccount();
   }
 });
-
 app.on('stormpath.ready', function () {
   app.listen(3000, 'localhost', function (err) {
     if (err) {
@@ -116,16 +120,10 @@ app.on('stormpath.ready', function () {
     console.log('Listening at http://localhost:3000');
   });
 });
-
-
 //============================== bootstrap 
-
 app.get('/css/bootstrap.min.css', function (req, res) {
   res.sendFile(path.join(__dirname, 'build/css/bootstrap.min.css'));
 });
-
 app.get('*', function (req, res) {
   res.sendFile(path.join(__dirname, 'build/index.html'));
 });
-
-
