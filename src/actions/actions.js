@@ -13,11 +13,13 @@ var consumerSecret = 'Ebz4pnMKFZYAUujKU5jNU4U5hPM';
 var token = 'q68AzroqStQAwijZk7w12Q8zrBE_rL6Y';
 var tokenSecret = 'dpCZPXBpGYTcscWoilv82RXbK_c';
 
+
  var oauth = new OAuthSimple(consumerKey, tokenSecret)
  
    var request = oauth.sign({
      action: "GET",
-     path: "https://api.yelp.com/v2/search",
+     path: "http://crossorigin.me/https://api.yelp.com/v2/search/",
+     parameters: "name=Coffee Bandits",
      signatures: {api_key: consumerKey, shared_secret: consumerSecret, access_token: token,
 access_secret: tokenSecret},
 
