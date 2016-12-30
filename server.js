@@ -29,7 +29,7 @@ var yelp = new Yelp({
 // https://www.yelp.com/developers/documentation/v3/business_search 
 yelp.search({term: 'food', location: 'Merced', limit: 10})
 .then(function (data) {
-    console.log(data);
+    // console.log(data);
 })
 .catch(function (err) {
     console.error('ERROR', err);
@@ -93,6 +93,14 @@ app.on('stormpath.ready', function () {
   });
 });
 
+
+app.get('/profile', stormpath.getUser, function (req, res) {
+  if (req.user) {
+    console.log('Hello, ' + req.user.email);
+  } else {
+    res.send('Not logged in');
+  }
+});
 
 //============================== bootstrap 
 
