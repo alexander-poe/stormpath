@@ -9,6 +9,7 @@ import ProfilePage from './pages/ProfilePage';
 import { IndexRoute, Route, browserHistory } from 'react-router';
 import store from './store';
 import {Provider} from 'react-redux';
+import thunk from 'redux-thunk';
 
 
 ReactStormpath.init();

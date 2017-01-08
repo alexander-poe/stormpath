@@ -7,44 +7,22 @@ const config = require('./webpack.config');
 const app = express();
 const compiler = webpack(config);
 const Yelp = require('yelpv3');
-
+require('dotenv').config();
 var knex = require('knex')({
   client: 'pg',
-  connection: {
-    database: 'YelpData'
-  },
+  connection: process.env.DB_LINK
 });
-
 app.use(bodyParser.json());
-
-
 app.use(require('webpack-dev-middleware')(compiler, {
   noInfo: true,
   publicPath: config.output.publicPath
 }));
-
 app.use(stormpath.init(app, {
   web: {
     produces: ['application/json']
   }
 }));
- //================================= Yelp Call
-var yelp = new Yelp({
-  app_id: 'USwwY8oe_EPJHgmgNAFJrA',
-  app_secret: '28AP3YcIOadjSNasanXU8pPt0e0JBzH8ar8Ndbdz6MUPzG36OBjIW6fTbhJsRouI'
-});
- 
-// https://www.yelp.com/developers/documentation/v3/business_search 
-yelp.search({term: 'food', location: 'Merced', limit: 10})
-.then(function (data) {
-    
-})
-.catch(function (err) {
-    console.error('ERROR', err);
-});
-
 var user; 
-
 app.get('/profile', stormpath.getUser, function (req, res) {
    if (req.user) {
     user = req.user.email;
@@ -55,30 +33,12 @@ app.get('/profile', stormpath.getUser, function (req, res) {
    }
 
  });
-
-app.get('/users', (req, res) => {
-  knex('users').select('id', 'email').then((users) => {
-    return res.status(200).json({users})
+app.get('/userdata', (req, res) => {
+  knex('paystubs').select('*').then((data) => {
+    console.log('server', data);
+    return res.status(200).json({data})
   })
 })
-
-app.post('/profile/save', (req, res) => {
-  console.log('request', req)
-  const body = req.body;
-  console.log(body)
-  knex.insert({
-    id    : 4,
-    email : user
-  }).into('users').then(id => {
-    console.log(id)
-    return res.status(201).json({})
-  }).catch(e => {
-    console.error(e);
-    res.sendStatus(500);
-  })
-
-});
-
 app.post('/me', stormpath.loginRequired, function (req, res) {
   function writeError(message) {
     res.status(400);
